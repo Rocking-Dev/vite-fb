@@ -32,8 +32,6 @@ jobs:
         with:
           name: node_modules
           path: node_modules
-      - run: npm install
-      - run: npm ci
       - run: npm run build
       - name: Archive Dist
         uses: actions/upload-artifact@master
