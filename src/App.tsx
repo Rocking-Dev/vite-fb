@@ -1,26 +1,26 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router";
 import Home from "./pages/Home";
 import Countries from "./pages/Countries";
 import Layout from "./Layout";
-import useAuth from "./hooks/useAuth";
+// import useAuth from "./hooks/useAuth";
 
 const App: React.FC = () => {
-  const { currentUser, isLoading, signInWithGoogle } = useAuth();
+  // const { currentUser, isLoading, signInWithGoogle } = useAuth();
 
-  useEffect(() => {
-    if (!isLoading && !currentUser) {
-      signInWithGoogle();
-    }
-  }, [isLoading, currentUser, signInWithGoogle]);
+  // useEffect(() => {
+  //   if (!isLoading && !currentUser) {
+  //     signInWithGoogle();
+  //   }
+  // }, [isLoading, currentUser, signInWithGoogle]);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <p>Loading...</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <Router>

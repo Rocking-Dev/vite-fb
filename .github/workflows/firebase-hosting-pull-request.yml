@@ -8,15 +8,63 @@ permissions:
   contents: read
   pull-requests: write
 jobs:
-  build_and_preview:
+  lint:
     if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: npm install
-      - run: npm ci && npm run build
+      - run: npm ci
+      - run: npm run lint
+  build:
+    needs: lint
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: npm ci
+      - run: npm run build
+      - name: Archive Dist
+        uses: actions/upload-artifact@master
+        with:
+          name: dist
+          path: dist
+  preview:
+    needs: build
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Dist
+        uses: actions/download-artifact@master
+        with:
+          name: dist
+          path: dist
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TEST_BB032 }}
           projectId: test-bb032
+          expires: 30d
+  truffle-hog:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - shell: bash
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            echo "depth=$(($(jq length <<< '${{ toJson(github.event.commits) }}') + 2))" >> $GITHUB_ENV
+            echo "branch=${{ github.ref_name }}" >> $GITHUB_ENV
+          fi
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "depth=$((${{ github.event.pull_request.commits }}+2))" >> $GITHUB_ENV
+            echo "branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+          fi
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{env.branch}}
+          fetch-depth: ${{env.depth}}
+      - uses: trufflesecurity/trufflehog@main
+        with:
+          extra_args: --results=verified,unknown
