@@ -7,12 +7,46 @@ on:
     branches:
       - main
 jobs:
-  build_and_deploy:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - run: npm install
-      - run: npm ci && npm run build
+      - run: npm ci
+      - run: npm run lint
+      - name: Archive node_modules
+        uses: actions/upload-artifact@master
+        with:
+          name: node_modules
+          path: node_modules
+  build:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install
+      - run: npm ci
+      - run: npm run build
+      - name: Archive dist
+        uses: actions/upload-artifact@master
+        with:
+          name: dist
+          path: dist
+  deploy_hosting:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download dist
+        uses: actions/download-artifact@master
+        with:
+          name: dist
+          path: dist
+      - name: Download node_modules
+        uses: actions/download-artifact@master
+        with:
+          name: node_modules
+          path: node_modules
       - uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
