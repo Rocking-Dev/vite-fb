@@ -28,7 +28,8 @@ const Drawer: React.FC<DrawerProps> = ({ isOpen, onClose }) => {
             {["Home", "Countries", "Settings", "Help"].map((item) => (
               <Link
                 key={item}
-                to={`/${item === "Home" ? "" : item.toLowerCase()}`}
+                to={`/${item === "Countries" ? "countries" : ""}`}
+                onClick={onClose}
                 className="text-gray-800 hover:text-primary"
               >
                 <li className="flex items-center h-12 pl-4 hover:bg-gray-400">
